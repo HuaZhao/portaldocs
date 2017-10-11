@@ -1,57 +1,63 @@
+<a name="performance"></a>
 # Performance
 
 The alerts can be configured for extension performance, blade performance and part performance.
 
+<a name="performance-configuration"></a>
 ## Configuration
 
 At a high level you define;
 
-1. An environment for the alerts to run against ("PROD" or "MPAC")
-1. The configuration for the alerts within that environment (baseline)
+1. An environment for the alerts to run against. See definition [below](#what-is-environment)
+1. The performance configuration for the alerts within that environment
 
 ```json
 {
     ...
-    "performance": [
-        "environment": "PROD", 
-        "baseline": [
-            {
-                "type": "extension", 
-                "criteria": [
-                    {
+    "environments": [
+        {
+            "environment": "portal.azure.com", 
+            "performance": [
+                {
+                    "type": "extension", 
+                    "criteria": [
+                        {
+                            ...
+                        },
                         ...
-                    },
-                    ...
-                ]
-            },
-            {
-                "type": "blade", 
-                "criteria": [
-                    {
+                    ]
+                },
+                {
+                    "type": "blade", 
+                    "criteria": [
+                        {
+                            ...
+                        },
                         ...
-                    },
-                    ...
-                ]
-            },
-            {
-                "type": "part", 
-                "criteria": [
-                    {
+                    ]
+                },
+                {
+                    "type": "part", 
+                    "criteria": [
+                        {
+                            ...
+                        },
                         ...
-                    },
-                    ...
-                ]
-            },
-            ...
-         ],
-        "environment": "MPAC",
-        "baseline": [
-            {
+                    ]
+                },
                 ...
-            },
+             ]
+        },
+        {
+            "environment": "ms.portal.azure.com",
+            "performance": [
+                {
+                    ...
+                },
+                ...
+             ],
             ...
-         ],
-        ...
+        }
     ]
     ...
 }
@@ -61,17 +67,20 @@ Per each of those, you can define a set of criteria like the below.
 
 > Only blade or part are required to have a bladeName or partName property.
 
+<a name="performance-configuration-what-is-environment"></a>
 ### What is environment?
 
-Environment can be either "PROD" or "MPAC"
+Environment can be &#34;&#42;&#34; or "portal.azure.com" or "ms.portal.azure.com" or "canary.portal.azure.com" or any other legit portal domain name. &#34;&#42;&#34; represents all Azure Portal Production environments(*.portal.azure.com).
 
-### What is baseline?
+<a name="performance-configuration-what-is-baseline"></a>
+### What is performance configuration?
 
-A baseline is an array of criteria to run against that environment, see below for further examples.
+Performance configuration is an array of criteria to run against that environment, see below for further examples.
 
+<a name="performance-configuration-extension"></a>
 ### Extension
 
-An example of an extension baseline 
+An example of an extension performance alert criteria 
 
 ```json
 [
@@ -87,9 +96,10 @@ An example of an extension baseline
 ]
 ```
 
+<a name="performance-configuration-blade"></a>
 ### Blade
 
-An example of a blade baseline
+An example of a blade performance alert criteria
 
 ```json
 [
@@ -106,9 +116,10 @@ An example of a blade baseline
 ]
 ```
 
-### Part 
+<a name="performance-configuration-part"></a>
+### Part
 
-An example of a part baseline
+An example of a part performance alert criteria
 
 > partName value is part’s full name.
 
@@ -127,18 +138,22 @@ An example of a part baseline
 ]
 ```
 
+<a name="performance-configuration-what-is-percentile"></a>
 ### What is percentile?
 
 This is at which percentile you want to measure the performance. Today the only options are 80 or 95.
 
+<a name="performance-configuration-what-is-percentilethreshold"></a>
 ### What is percentileThreshold?
 
 This is the minimum duration (in seconds) when {percentile}% of users is above the {percentileThreshold}.
 
+<a name="performance-configuration-what-is-minaffectedusercount"></a>
 ### What is minAffectedUserCount?
 
 This is the minimum number of users whose load duration is above {percentileThreshold}.
 
+<a name="performance-configuration-what-is-bottomminaffectedusercount"></a>
 ### What is bottomMinAffectedUserCount?
 
 This is used as a threshold to trigger an alert if the {percentile} defined is greater than or
@@ -148,6 +163,7 @@ equal to __double__ of the {percentileThreshold} defined.
 
 This is used to catch any unusual spikes on the weekends/low traffic periods.
 
+<a name="performance-configuration-when-do-the-alerts-trigger"></a>
 ### When do the alerts trigger?
 
 Every 5 minutes, we get percentile load duration for the last 90 minutes. We get the most recent 6 sample points and calculate a weighted percentile load duration based on the following formula.
@@ -161,10 +177,12 @@ Alerts will only trigger when one of the following criteria is met.
 1. Weighted duration is above {percentileThreshold} and affected user count is above {minAffectedUserCount}
 1. Weighted duration is above 2 * {percentileThreshold} and affected user count is above {bottomMinAffectedUserCount}
 
+<a name="performance-how-often-do-they-run"></a>
 ## How often do they run?
 
 Currently performance alerts run every 5 minutes assessing the previous 90 minute of data.
 
+<a name="performance-how-do-i-onboard"></a>
 ## How do I onboard?
 
 1.	Generate the desired per extension configuration
@@ -192,6 +210,7 @@ Currently performance alerts run every 5 minutes assessing the previous 90 minut
 | Performance - Blade | BladeLoadPerformance |
 | Performance - Part | PartLoadPerformance|
 
+<a name="performance-what-should-i-set-the-thresholds-at"></a>
 ## What should I set the thresholds at?
 
 There are two ways advised to decide how to set your thresholds.
@@ -202,19 +221,21 @@ There are two ways advised to decide how to set your thresholds.
     - [Blade][alerting-performance-blade-function]) 
     - [Part][alerting-performance-part-function]) 
 
+<a name="performance-what-happens-if-i-need-to-update-them"></a>
 ## What happens if I need to update them?
 
 1.	Contact [ibizafxhot](mailto:ibizafxhot@microsoft.com) and attached the updated configuration
 1.	We will respond as soon as possible and apply the updates
 
-## How do I know my extension's current configuration?
+<a name="performance-how-do-i-know-my-extension-s-current-configuration"></a>
+## How do I know my extension&#39;s current configuration?
 
 Within kusto your configuration will be defined under a function. To find the function use the this [link][alerting-kusto-partner] and replace `PerfBaseline_HubsExtension` with `PerfBaseline_YOUR_EXTENSION_NAME`. The function will only exist once you have onboarded to the alerting infrastructure. Or visit the tool to view a read only version of your config, again this is only available once you have onboarded.
 
 
 [alerting-onboarding]: https://aka.ms/portalfx/alerting-onboarding
 [alerting-tool]: https://microsoft.sharepoint.com/teams/azureteams/docs/PortalFx/Alert/AlertCustomizationTool.zip
-[alerting-kusto-partner]: https://ailoganalyticsportal-privatecluster.cloudapp.net/clusters/azportal.kusto.windows.net/databases/Partner?q=H4sIAAAAAAAEAAtILUpzSixOzcnMS433KE0qdq0oSc0rzszP09BUAABSeYgPHQAAAA%3d%3d
-[alerting-performance-extension-function]: https://aka.ms/kwe?cluster=azportal.kusto.windows.net&database=AzurePortal&q=H4sIAAAAAAAAA3NPLXGtKEnNK87Mz%2FPJT0wJSC1Kc8xJLSrxyCzRSEzP1zA0SdHUycsv19DUUfLNTC7KL85PK4l3rCotSo0PLskvSkxPVdJRCgjyd1HSsTTVMTc1MNAxNdAxNNBU4OUCANmD5aJeAAAA
-[alerting-performance-blade-function]: https://aka.ms/kwe?cluster=azportal.kusto.windows.net&database=AzurePortal&q=H4sIAAAAAAAAAy3MsQrCMBAA0F3wJzIlcNAU2sExouhQsergWEJyraElB8kFxa8X1PEt74C8XazHjqzvMY1mwcTHwNJOJOvGK4j0lArE%2FsUYc6BYnYJLlGnkwbxLwuHGlOyE1fep%2FjLOUYm%2F%2Bx74cSnBzV2IcxYg%2But5J2DTQqO1hlpDq9arD7xzGJ6KAAAA
-[alerting-performance-part-function]: https://aka.ms/kwe?cluster=azportal.kusto.windows.net&database=AzurePortal&q=H4sIAAAAAAAAA3NPLQlILCrxyU9MCUgtSnPMSS0q8cgs0UhMz9cwNEnR1MnLL9fQ1FFyrShJzSvOzM%2FT981MLsovzk8riXesKi1KjQ8uyS9KTE%2FVBxkTUlmQqg8VcExOzi%2FNA5uupKMUEOTvoqRjYaBjbmpgoGMIxKaavFwAuRiNBX4AAAA%3D
+[alerting-kusto-partner]: https://ailoganalyticsportal-privatecluster.cloudapp.net/clusters/azportal.kusto.windows.net/databases/Partner?q=H4sIAAAAAAAEAAtILUpzzEktKon3KE0qdq0oSc0rzszP09AEAEY7dWMZAAAA
+[alerting-performance-extension-function]: https://ailoganalyticsportal-privatecluster.cloudapp.net/clusters/azportal.kusto.windows.net/databases/Partner?q=H4sIAAAAAAAEAHNPLXGtKEnNK87Mz%2fPJT0wJSC1Kc8xJLSrxyCzRSEzP1zA0SdHUycsv19DUUfLNTC7KL85PK4l3rCotSo0PLskvSkxPVdJRKsgvKknM0UsECesl5%2bcq6Via6pibGhjomBroGBpoAgAN1%2f97ZwAAAA%3d%3d
+[alerting-performance-blade-function]: https://ailoganalyticsportal-privatecluster.cloudapp.net/clusters/azportal.kusto.windows.net/databases/Partner?q=H4sIAAAAAAAEAC3MPQvCMBCA4f%2bSqYWjTaEdHCOIHSooDo4lpNd6NOYkuaD468WP8R3eZ4%2by9XbCge10xDgbj1F6ksIuXDTtVELgR1GC2j0FQyIO9YFc5MSzjOaVI45n4WgXrL9O%2fS%2fjHOfwsy8k11Mmtw4U1qRA3TmK9ZX97JXjm4JNB63WGhoNXfkGLCEvwJQAAAA%3d
+[alerting-performance-part-function]: https://ailoganalyticsportal-privatecluster.cloudapp.net/clusters/azportal.kusto.windows.net/databases/Partner?q=H4sIAAAAAAAEAC2MywrCMBAA%2fyWnBJamBYtecxB7UCjovSzptgRqtmy3%2bPh6rXiYy8DMibRF0TNj35IMYSLRJqnFkW216x1kflgH5vhUykvi7C8pCi88aBfeq1B3VRYcyW%2bb22sm%2fxchRl7z727AzCyKU4FbUkS%2bGziUsK%2fLEqovtfsAn77k%2fogAAAA%3d

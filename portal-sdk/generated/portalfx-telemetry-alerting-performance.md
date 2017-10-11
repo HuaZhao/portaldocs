@@ -8,7 +8,7 @@ The alerts can be configured for extension performance, blade performance and pa
 
 At a high level you define;
 
-1. An environment for the alerts to run against ("PROD" or "MPAC")
+1. An environment for the alerts to run against ("portal.azure.com" or "MPAC")
 1. The configuration for the alerts within that environment (baseline)
 
 ```json
